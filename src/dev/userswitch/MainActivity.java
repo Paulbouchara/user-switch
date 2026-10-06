@@ -518,9 +518,11 @@ public final class MainActivity extends Activity implements Store.Listener {
         boolean started = st == ShizukuLauncher.State.NEEDS_PERMISSION || st == ShizukuLauncher.State.DENIED;
         if (started) return 5;
         if (st == ShizukuLauncher.State.NOT_INSTALLED || st == ShizukuLauncher.State.TOO_OLD) return 0;
-        if (globalSetting(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED) != 1) return 1;
-        // Wireless debugging's switch is not public: when it cannot be read, assume the
-        // user is past it and point at pairing, which says where it is anyway.
+        // Shizuku has run for us before, so it is paired: it only needs starting again
+        // (after a reboot, or a framework restart that leaves shizuku_server unusable).
+        if (ShizukuLauncher.everConnected(this)) return 4;
+        // A setting that cannot be read (-1) counts as done: the next steps say where it is.
+        if (globalSetting(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED) == 0) return 1;
         if (globalSetting("adb_wifi_enabled") == 0) return 2;
         return 3; // pairing cannot be seen from here; starting Shizuku shows it worked
     }

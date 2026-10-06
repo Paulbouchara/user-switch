@@ -433,7 +433,8 @@ public final class Main {
 
     static int currentUser() throws Exception {
         try {
-            return (Integer) ActivityManager.class.getMethod("getCurrentUser").invoke(null);
+            return (Integer) findMethod(activityManager().getClass(), "getCurrentUserId", 0)
+                    .invoke(activityManager());
         } catch (ReflectiveOperationException e) {
             return Integer.parseInt(sh("am", "get-current-user").trim());
         }
@@ -441,8 +442,25 @@ public final class Main {
 
     // ---- framework access (hidden APIs, reachable from app_process) --------
 
-    static Object activityManager() throws Exception {
-        return ActivityManager.class.getMethod("getService").invoke(null);
+    private static IBinder amBinder;
+    private static Object am;
+
+    /**
+     * IActivityManager, fetched again when system_server has restarted (a crash
+     * there, e.g. after a SystemUI crash during a user switch, restarts the
+     * framework but not this process). ActivityManager.getService() would keep
+     * the dead binder for good: every call would then fail until a restart.
+     */
+    static synchronized Object activityManager() throws Exception {
+        if (am == null || !amBinder.isBinderAlive()) {
+            IBinder b = (IBinder) Class.forName("android.os.ServiceManager")
+                    .getMethod("getService", String.class).invoke(null, "activity");
+            if (b == null) throw new IllegalStateException("activity service not up yet");
+            am = Class.forName("android.app.IActivityManager$Stub")
+                    .getMethod("asInterface", IBinder.class).invoke(null, b);
+            amBinder = b;
+        }
+        return am;
     }
 
     static Method findMethod(Class<?> cls, String name, int params) throws NoSuchMethodException {
