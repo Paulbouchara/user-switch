@@ -14,7 +14,9 @@ Score d'une séquence : 1 point par appui, +1 pour un appui long (≥ 500 ms), +
 L'app lance le programme de fond comme UserService Shizuku (`DaemonService`, droits shell).
 
 1. Installe Shizuku, démarre-le (débogage sans fil), puis ouvre User Switch et accorde l'autorisation.
-2. **Après un redémarrage** : sans root, Shizuku ne démarre pas tout seul, et il n'envoie son binder qu'aux apps qui démarrent ou passent au premier plan après lui. Une notification apparaît au démarrage : démarre Shizuku (bouton « Ouvrir Shizuku »), puis touche la notification. User Switch s'ouvre et relance le programme de fond.
+2. **Après un redémarrage** : sans root, Shizuku ne démarre pas tout seul. Une notification le rappelle (bouton « Ouvrir Shizuku »). Une fois Shizuku démarré, le programme de fond repart **tout seul en 1 à 2 minutes**, sans ouvrir l'app ; toucher la notification le relance tout de suite.
+
+   Pourquoi ce délai : Shizuku n'envoie son binder qu'à sa propre app au démarrage, et aux autres apps autorisées seulement quand leur processus change d'état. `ShizukuWatch` (une alarme non réveillante, toutes les 60 s, armée au démarrage et quand Shizuku s'arrête) provoque ce changement d'état. Le système le provoque aussi de lui-même environ 90 s après. L'alarme se désarme dès que le programme de fond tourne, et abandonne au bout de 6 h.
 
 Le programme de fond lancé par Shizuku survit au changement de profil. Un seul programme de fond tourne à la fois : celui qui démarre arrête l'autre (fichier `/data/local/tmp/userswitch.pid`).
 
@@ -34,6 +36,6 @@ Journal du programme de fond : `adb shell cat /data/local/tmp/userswitch.log`.
 
 ## Limites actuelles
 
-- Après un redémarrage, il faut démarrer Shizuku puis ouvrir User Switch (ou relancer le programme de fond depuis le PC).
+- Après un redémarrage, il faut démarrer Shizuku à la main (pas de démarrage automatique de Shizuku sans root) ; le programme de fond suit en 1 à 2 minutes.
 - Les appuis ne sont pas interceptés : le volume change quand même pendant la séquence.
 - La séquence refaite doit être identique à celle enregistrée.
