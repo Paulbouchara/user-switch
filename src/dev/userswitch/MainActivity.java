@@ -521,7 +521,9 @@ public final class MainActivity extends Activity implements Store.Listener {
         // Shizuku has run for us before, so it is paired: it only needs starting again
         // (after a reboot, or a framework restart that leaves shizuku_server unusable).
         if (ShizukuLauncher.everConnected(this)) return 4;
-        // A setting that cannot be read (-1) counts as done: the next steps say where it is.
+        // Only a 1 can be trusted: Android 17 (beta, Pixel 11 Pro Fold) silently answers 0
+        // to apps for both settings even when they are on. A 0 therefore just leaves the
+        // user on that step, whose text says how to check it; -1 (unreadable) counts as done.
         if (globalSetting(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED) == 0) return 1;
         if (globalSetting("adb_wifi_enabled") == 0) return 2;
         return 3; // pairing cannot be seen from here; starting Shizuku shows it worked
