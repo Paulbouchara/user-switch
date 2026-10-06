@@ -35,20 +35,20 @@ public final class BootReceiver extends BroadcastReceiver {
         NotificationManager nm = ctx.getSystemService(NotificationManager.class);
         nm.deleteNotificationChannel(OLD_CHANNEL);
         nm.createNotificationChannel(new NotificationChannel(
-                CHANNEL, "Rappel après redémarrage", NotificationManager.IMPORTANCE_HIGH));
+                CHANNEL, ctx.getString(R.string.reminder_channel), NotificationManager.IMPORTANCE_HIGH));
 
         PendingIntent open = PendingIntent.getActivity(ctx, 0,
                 new Intent(ctx, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b = new Notification.Builder(ctx, CHANNEL)
                 .setSmallIcon(android.R.drawable.ic_menu_rotate)
-                .setContentTitle("User Switch inactif")
-                .setContentText("Démarre Shizuku : le démon suivra tout seul en 1 à 2 minutes (ou touche ici).")
+                .setContentTitle(ctx.getString(R.string.reminder_title))
+                .setContentText(ctx.getString(R.string.reminder_text))
                 .setContentIntent(open)
                 .setAutoCancel(true);
 
         Intent shizuku = ctx.getPackageManager().getLaunchIntentForPackage(ShizukuLauncher.SHIZUKU_PACKAGE);
         if (shizuku != null) {
-            b.addAction(new Notification.Action.Builder(null, "Ouvrir Shizuku",
+            b.addAction(new Notification.Action.Builder(null, ctx.getString(R.string.open_shizuku),
                     PendingIntent.getActivity(ctx, 1, shizuku, PendingIntent.FLAG_IMMUTABLE)).build());
         }
         nm.notify(ID, b.build());

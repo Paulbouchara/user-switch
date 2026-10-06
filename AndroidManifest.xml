@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dev.userswitch"
-    android:versionCode="7"
-    android:versionName="0.7">
+    android:versionCode="8"
+    android:versionName="0.8">
 
     <!-- Shizuku client: permission and V3 marker come from the Shizuku provider library. -->
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
@@ -15,7 +15,8 @@
 
     <application
         android:name=".App"
-        android:label="User Switch"
+        android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"
         android:allowBackup="false">
 

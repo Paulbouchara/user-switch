@@ -33,7 +33,7 @@ public final class MainActivity extends Activity implements Store.Listener {
     private TextView recordHint;
     private Button recordButton;
     private LinearLayout list;
-    /** What the list currently shows; rebuilding every tick could swallow a tap on "Supprimer". */
+    /** What the list currently shows; rebuilding every tick could swallow a tap on "Delete". */
     private String shownList;
 
     private final Runnable tick = new Runnable() {
@@ -60,7 +60,7 @@ public final class MainActivity extends Activity implements Store.Listener {
         int pad = dp(20);
         root.setPadding(pad, pad, pad, pad);
 
-        TextView title = text("User Switch", 26);
+        TextView title = text(getString(R.string.app_name), 26);
         root.addView(title);
 
         status = text("", 15);
@@ -78,7 +78,7 @@ public final class MainActivity extends Activity implements Store.Listener {
         shizukuButton.setLayoutParams(gap);
 
         recordButton = new Button(this);
-        recordButton.setText("Enregistrer une séquence");
+        recordButton.setText(R.string.record);
         recordButton.setOnClickListener(v -> {
             if (store.isRecording()) store.cancelRecording();
             else store.startRecording();
@@ -89,12 +89,12 @@ public final class MainActivity extends Activity implements Store.Listener {
         recordHint.setPadding(0, dp(8), 0, dp(16));
         root.addView(recordHint);
 
-        root.addView(text("Séquences", 20));
+        root.addView(text(getString(R.string.sequences), 20));
         list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
         root.addView(list);
 
-        TextView help = text("Sans Shizuku, le démon se lance depuis le PC (à refaire après chaque redémarrage) :\n\n" + START_CMD, 13);
+        TextView help = text(getString(R.string.pc_help, START_CMD), 13);
         help.setPadding(0, dp(24), 0, 0);
         help.setTextIsSelectable(true);
         root.addView(help);
@@ -147,20 +147,17 @@ public final class MainActivity extends Activity implements Store.Listener {
         long seen = store.daemonSeenAt();
         long ago = (System.currentTimeMillis() - seen) / 1000;
         if (seen == 0) {
-            status.setText("Démon : en attente de son signal (toutes les 30 s).");
+            status.setText(R.string.daemon_waiting);
         } else if (ago <= 2 * HEARTBEAT_S) {
-            status.setText("Démon : actif (pid " + store.daemonPid() + ")");
+            status.setText(getString(R.string.daemon_running, store.daemonPid()));
         } else {
-            status.setText("Démon : arrêté, ou téléphone en veille (dernier signe il y a " + ago + " s)");
+            status.setText(getString(R.string.daemon_stopped, (int) ago));
         }
         refreshShizuku();
 
         boolean recording = store.isRecording();
-        recordButton.setText(recording ? "Annuler l'enregistrement" : "Enregistrer une séquence");
-        recordHint.setText(recording
-                ? "Fais ta séquence sur les boutons maintenant, puis attends une seconde.\n"
-                        + "Au moins 3 points : 1 par appui, +1 si appui long, +1 si plusieurs boutons ensemble."
-                : "");
+        recordButton.setText(recording ? R.string.record_cancel : R.string.record);
+        recordHint.setText(recording ? getString(R.string.record_hint) : "");
 
         String recorded = store.takeRecorded();
         if (recorded != null) chooseTarget(recorded);
@@ -170,7 +167,7 @@ public final class MainActivity extends Activity implements Store.Listener {
         List<String> labels = new ArrayList<>();
         StringBuilder sig = new StringBuilder();
         for (Store.Sequence s : seqs) {
-            String label = Store.targetLabel(s.target, users);
+            String label = Store.targetLabel(this, s.target, users);
             labels.add(label);
             sig.append(s.keys).append('>').append(label).append(';');
         }
@@ -178,7 +175,7 @@ public final class MainActivity extends Activity implements Store.Listener {
         shownList = sig.toString();
 
         list.removeAllViews();
-        if (seqs.isEmpty()) list.addView(text("Aucune séquence.", 15));
+        if (seqs.isEmpty()) list.addView(text(getString(R.string.no_sequences), 15));
         for (int i = 0; i < seqs.size(); i++) {
             Store.Sequence s = seqs.get(i);
             LinearLayout row = new LinearLayout(this);
@@ -187,7 +184,7 @@ public final class MainActivity extends Activity implements Store.Listener {
             TextView label = text(Store.pretty(s.keys) + "\n→ " + labels.get(i), 15);
             row.addView(label, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             Button del = new Button(this);
-            del.setText("Supprimer");
+            del.setText(R.string.delete);
             del.setOnClickListener(v -> store.removeSequence(s.keys));
             row.addView(del);
             list.addView(row);
@@ -198,41 +195,40 @@ public final class MainActivity extends Activity implements Store.Listener {
 
     private void refreshShizuku() {
         ShizukuLauncher.State st = shizuku.state();
-        String text;
-        String button;
+        int text;
+        int button;
         switch (st) {
             case NOT_INSTALLED:
-                text = "Shizuku : non installé. Installe-le pour lancer le démon sans PC.";
-                button = null;
+                text = R.string.shizuku_not_installed;
+                button = 0;
                 break;
             case NOT_RUNNING:
-                text = "Shizuku : installé mais pas démarré. Démarre-le dans l'app Shizuku (débogage sans fil), "
-                        + "le démon suivra automatiquement.";
-                button = "Ouvrir Shizuku";
+                text = R.string.shizuku_not_running;
+                button = R.string.open_shizuku;
                 break;
             case TOO_OLD:
-                text = "Shizuku : version trop ancienne, mets-le à jour.";
-                button = "Ouvrir Shizuku";
+                text = R.string.shizuku_too_old;
+                button = R.string.open_shizuku;
                 break;
             case NEEDS_PERMISSION:
-                text = "Shizuku : démarré, autorisation à accorder.";
-                button = "Autoriser et lancer le démon";
+                text = R.string.shizuku_needs_permission;
+                button = R.string.grant_and_start;
                 break;
             case DENIED:
-                text = "Shizuku : autorisation refusée. Accorde-la dans l'app Shizuku.";
-                button = "Réessayer";
+                text = R.string.shizuku_denied;
+                button = R.string.retry;
                 break;
             case READY:
-                text = "Shizuku : prêt.";
-                button = "Lancer le démon via Shizuku";
+                text = R.string.shizuku_ready;
+                button = R.string.start_daemon;
                 break;
             default:
-                text = "Shizuku : le démon tourne via Shizuku. Il redémarrera avec Shizuku.";
-                button = "Arrêter le démon";
+                text = R.string.shizuku_running;
+                button = R.string.stop_daemon;
         }
         shizukuStatus.setText(text);
-        shizukuButton.setVisibility(button == null ? android.view.View.GONE : android.view.View.VISIBLE);
-        if (button != null) shizukuButton.setText(button);
+        shizukuButton.setVisibility(button == 0 ? android.view.View.GONE : android.view.View.VISIBLE);
+        if (button != 0) shizukuButton.setText(button);
     }
 
     private void onShizukuButton() {
@@ -254,19 +250,19 @@ public final class MainActivity extends Activity implements Store.Listener {
     private void chooseTarget(String keys) {
         List<String> labels = new ArrayList<>();
         List<String> targets = new ArrayList<>();
-        labels.add("Profil suivant");
+        labels.add(getString(R.string.target_next));
         targets.add("next");
         for (Store.User u : store.users()) {
-            labels.add(u.name + " (" + u.id + ")");
+            labels.add(getString(R.string.target_user, u.name, u.id));
             targets.add(Integer.toString(u.id));
         }
         new AlertDialog.Builder(this)
                 .setTitle(Store.pretty(keys))
                 .setItems(labels.toArray(new String[0]), (d, which) -> {
                     store.putSequence(keys, targets.get(which));
-                    Toast.makeText(this, "Séquence enregistrée", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.sequence_saved, Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton("Annuler", null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 

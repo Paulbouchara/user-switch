@@ -223,9 +223,11 @@ public final class Store {
         return sb.toString();
     }
 
-    public static String targetLabel(String target, List<User> users) {
-        if ("next".equals(target)) return "Profil suivant";
-        for (User u : users) if (Integer.toString(u.id).equals(target)) return u.name + " (" + u.id + ")";
-        return "Profil " + target;
+    public static String targetLabel(Context ctx, String target, List<User> users) {
+        if ("next".equals(target)) return ctx.getString(R.string.target_next);
+        for (User u : users) {
+            if (Integer.toString(u.id).equals(target)) return ctx.getString(R.string.target_user, u.name, u.id);
+        }
+        return ctx.getString(R.string.target_unknown, target);
     }
 }

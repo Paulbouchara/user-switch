@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- état du démon -->
+    <string name="daemon_waiting">Démon : en attente de son signal (toutes les 30 s).</string>
+    <string name="daemon_running">Démon : actif (pid %1$d)</string>
+    <string name="daemon_stopped">Démon : arrêté, ou téléphone en veille (dernier signe il y a %1$d s)</string>
+
+    <!-- Shizuku -->
+    <string name="shizuku_not_installed">Shizuku : non installé. Installe-le pour lancer le démon sans PC.</string>
+    <string name="shizuku_not_running">Shizuku : installé mais pas démarré. Démarre-le dans l\'app Shizuku (débogage sans fil), le démon suivra automatiquement.</string>
+    <string name="shizuku_too_old">Shizuku : version trop ancienne, mets-le à jour.</string>
+    <string name="shizuku_needs_permission">Shizuku : démarré, autorisation à accorder.</string>
+    <string name="shizuku_denied">Shizuku : autorisation refusée. Accorde-la dans l\'app Shizuku.</string>
+    <string name="shizuku_ready">Shizuku : prêt.</string>
+    <string name="shizuku_running">Shizuku : le démon tourne via Shizuku. Il redémarrera avec Shizuku.</string>
+    <string name="open_shizuku">Ouvrir Shizuku</string>
+    <string name="grant_and_start">Autoriser et lancer le démon</string>
+    <string name="retry">Réessayer</string>
+    <string name="start_daemon">Lancer le démon via Shizuku</string>
+    <string name="stop_daemon">Arrêter le démon</string>
+
+    <!-- enregistrement et séquences -->
+    <string name="record">Enregistrer une séquence</string>
+    <string name="record_cancel">Annuler l\'enregistrement</string>
+    <string name="record_hint">Fais ta séquence sur les boutons maintenant, puis attends une seconde.\nAu moins 3 points : 1 par appui, +1 si appui long, +1 si plusieurs boutons ensemble.</string>
+    <string name="sequences">Séquences</string>
+    <string name="no_sequences">Aucune séquence.</string>
+    <string name="delete">Supprimer</string>
+    <string name="sequence_saved">Séquence enregistrée</string>
+    <string name="cancel">Annuler</string>
+    <string name="target_next">Profil suivant</string>
+    <string name="target_user">%1$s (%2$d)</string>
+    <string name="target_unknown">Profil %1$s</string>
+
+    <string name="pc_help">Sans Shizuku, le démon se lance depuis le PC (à refaire après chaque redémarrage) :\n\n%1$s</string>
+
+    <!-- rappel après redémarrage -->
+    <string name="reminder_channel">Rappel après redémarrage</string>
+    <string name="reminder_title">User Switch inactif</string>
+    <string name="reminder_text">Démarre Shizuku : le démon suivra tout seul en 1 à 2 minutes (ou touche ici).</string>
+</resources>

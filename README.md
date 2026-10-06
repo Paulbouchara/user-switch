@@ -7,6 +7,8 @@ Change de profil utilisateur sur GrapheneOS avec une séquence de boutons physiq
 - **Programme de fond** (`src/dev/userswitch/daemon/Main.java`) : il est lancé avec les droits shell d'ADB via `app_process` et survit à la coupure d'ADB. Il lit les boutons dans `/dev/input` (power, volume haut, volume bas), découpe les appuis en séquences (`UP UP DOWN:long`, accords `UP+DOWN`), envoie chaque séquence de 3 points ou plus à l'app par binder, puis change de profil si l'app renvoie une cible.
 - **App** (`MainActivity`, `ConfigProvider`, `Store`) : elle enregistre les séquences et les associe à un profil ou à « Profil suivant ». Le découpage étant fait par le programme de fond, une séquence enregistrée est toujours découpée comme celle qu'on refait ensuite.
 
+Langues : anglais (par défaut) et français (`res/values-fr/`). L'app suit la langue du système, et se règle à part dans Paramètres › Applis › User Switch › Langue (Android 13+, via `res/xml/locales_config.xml`). Pour ajouter une langue : un `res/values-<code>/strings.xml` et une ligne dans `locales_config.xml`.
+
 Score d'une séquence : 1 point par appui, +1 pour un appui long (≥ 500 ms), +1 pour plusieurs boutons pressés ensemble. Une séquence se termine après 800 ms sans appui.
 
 ## Avec Shizuku (sans PC)

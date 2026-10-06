@@ -11,11 +11,13 @@ KS=${KEYSTORE:-$HOME/.android/debug.keystore}
 rm -rf build
 mkdir -p build/classes build/dex
 
+# Resources (strings per language, locale config) and the R class that names them.
+"$BT/aapt2" compile --dir res -o build/res.zip
 "$BT/aapt2" link -o build/base.apk -I "$JAR" --manifest AndroidManifest.xml \
-    --min-sdk-version 30 --target-sdk-version 36
+    --min-sdk-version 30 --target-sdk-version 36 --java build/gen build/res.zip
 
 LIBS=$(ls libs/*.jar | paste -sd:)
-javac --release 17 -Xlint:-options -classpath "$JAR:$LIBS" -d build/classes $(find src -name '*.java')
+javac --release 17 -Xlint:-options -classpath "$JAR:$LIBS" -d build/classes $(find src build/gen -name '*.java')
 
 "$BT/d8" --release --min-api 30 --lib "$JAR" --output build/dex $(find build/classes -name '*.class') libs/*.jar
 

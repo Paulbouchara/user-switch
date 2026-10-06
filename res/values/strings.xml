@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Default (English) strings. Translations live in values-<lang>/strings.xml. -->
+<resources>
+    <string name="app_name" translatable="false">User Switch</string>
+
+    <!-- daemon status -->
+    <string name="daemon_waiting">Daemon: waiting for its signal (every 30 s).</string>
+    <string name="daemon_running">Daemon: running (pid %1$d)</string>
+    <string name="daemon_stopped">Daemon: stopped, or phone asleep (last sign %1$d s ago)</string>
+
+    <!-- Shizuku -->
+    <string name="shizuku_not_installed">Shizuku: not installed. Install it to start the daemon without a computer.</string>
+    <string name="shizuku_not_running">Shizuku: installed but not started. Start it in the Shizuku app (wireless debugging); the daemon will follow on its own.</string>
+    <string name="shizuku_too_old">Shizuku: version too old, please update it.</string>
+    <string name="shizuku_needs_permission">Shizuku: started, permission to grant.</string>
+    <string name="shizuku_denied">Shizuku: permission denied. Grant it in the Shizuku app.</string>
+    <string name="shizuku_ready">Shizuku: ready.</string>
+    <string name="shizuku_running">Shizuku: the daemon runs through Shizuku. It will restart with Shizuku.</string>
+    <string name="open_shizuku">Open Shizuku</string>
+    <string name="grant_and_start">Grant and start the daemon</string>
+    <string name="retry">Retry</string>
+    <string name="start_daemon">Start the daemon through Shizuku</string>
+    <string name="stop_daemon">Stop the daemon</string>
+
+    <!-- recording and sequences -->
+    <string name="record">Record a sequence</string>
+    <string name="record_cancel">Cancel recording</string>
+    <string name="record_hint">Do your sequence on the buttons now, then wait a second.\nAt least 3 points: 1 per press, +1 for a long press, +1 for several buttons together.</string>
+    <string name="sequences">Sequences</string>
+    <string name="no_sequences">No sequences.</string>
+    <string name="delete">Delete</string>
+    <string name="sequence_saved">Sequence saved</string>
+    <string name="cancel">Cancel</string>
+    <string name="target_next">Next profile</string>
+    <string name="target_user">%1$s (%2$d)</string>
+    <string name="target_unknown">Profile %1$s</string>
+
+    <string name="pc_help">Without Shizuku, start the daemon from a computer (again after every reboot):\n\n%1$s</string>
+
+    <!-- after-boot reminder -->
+    <string name="reminder_channel">Reminder after reboot</string>
+    <string name="reminder_title">User Switch inactive</string>
+    <string name="reminder_text">Start Shizuku: the daemon will follow on its own within 1 to 2 minutes (or tap here).</string>
+</resources>
