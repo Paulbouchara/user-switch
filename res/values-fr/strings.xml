@@ -1,30 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- état du démon -->
-    <string name="daemon_waiting">Démon : en attente de son signal (toutes les 30 s).</string>
-    <string name="daemon_running">Démon : actif (pid %1$d)</string>
-    <string name="daemon_stopped">Démon : arrêté, ou téléphone en veille (dernier signe il y a %1$d s)</string>
+    <string name="tagline">Change de profil avec une séquence sur les boutons latéraux.</string>
+
+    <!-- carte d'état -->
+    <string name="status_daemon">Démon</string>
+    <string name="daemon_waiting">En attente de son signal (toutes les 30 s)</string>
+    <string name="daemon_running">Actif · pid %1$d</string>
+    <string name="daemon_stopped">Arrêté, ou téléphone en veille (dernier signe il y a %1$d s)</string>
 
     <!-- Shizuku -->
-    <string name="shizuku_not_installed">Shizuku : non installé. Installe-le pour lancer le démon sans PC.</string>
-    <string name="shizuku_not_running">Shizuku : installé mais pas démarré. Démarre-le dans l\'app Shizuku (débogage sans fil), le démon suivra automatiquement.</string>
-    <string name="shizuku_too_old">Shizuku : version trop ancienne, mets-le à jour.</string>
-    <string name="shizuku_needs_permission">Shizuku : démarré, autorisation à accorder.</string>
-    <string name="shizuku_denied">Shizuku : autorisation refusée. Accorde-la dans l\'app Shizuku.</string>
-    <string name="shizuku_ready">Shizuku : prêt.</string>
-    <string name="shizuku_running">Shizuku : le démon tourne via Shizuku. Il redémarrera avec Shizuku.</string>
+    <string name="shizuku_not_installed">Non installé. Installe-le pour lancer le démon sans PC.</string>
+    <string name="shizuku_not_running">Installé mais pas démarré. Démarre-le dans l\'app Shizuku, le démon suivra tout seul.</string>
+    <string name="shizuku_too_old">Version trop ancienne, mets-le à jour.</string>
+    <string name="shizuku_needs_permission">Démarré, autorisation à accorder.</string>
+    <string name="shizuku_denied">Autorisation refusée. Accorde-la dans l\'app Shizuku.</string>
+    <string name="shizuku_ready">Prêt.</string>
+    <string name="shizuku_running">Fait tourner le démon. Il redémarrera avec Shizuku.</string>
     <string name="open_shizuku">Ouvrir Shizuku</string>
     <string name="grant_and_start">Autoriser et lancer le démon</string>
     <string name="retry">Réessayer</string>
-    <string name="start_daemon">Lancer le démon via Shizuku</string>
+    <string name="start_daemon">Lancer le démon</string>
     <string name="stop_daemon">Arrêter le démon</string>
+
+    <!-- guide Shizuku -->
+    <string name="guide_title">Configurer Shizuku</string>
+    <string name="guide_subtitle">Shizuku lance le démon sans PC. Réglage unique, environ 2 minutes.</string>
+    <string name="guide_done">Tout est prêt. Après un redémarrage, seule l\'étape 5 est à refaire.</string>
+    <string name="guide_show">Guide de configuration Shizuku</string>
+    <string name="step_install">Installe Shizuku</string>
+    <string name="step_install_body">Depuis le Play Store, ou depuis GitHub (RikkaApps/Shizuku).</string>
+    <string name="step_install_button">Obtenir Shizuku</string>
+    <string name="step_dev">Active les options pour les développeurs</string>
+    <string name="step_dev_body">Paramètres › À propos du téléphone : touche 7 fois Numéro de build.</string>
+    <string name="step_dev_button">Ouvrir À propos du téléphone</string>
+    <string name="step_wireless">Active le débogage sans fil</string>
+    <string name="step_wireless_body">Connecte-toi au Wi-Fi, puis Paramètres › Système › Options pour les développeurs › Débogage sans fil.</string>
+    <string name="step_wireless_button">Ouvrir les options développeur</string>
+    <string name="step_pair">Associe Shizuku (une seule fois)</string>
+    <string name="step_pair_body">Dans Shizuku : Démarrer via le débogage sans fil › Association. Puis dans Débogage sans fil : Associer l\'appareil avec un code d\'association, et tape ce code dans Shizuku.</string>
+    <string name="step_pair_tip_open">Fold ouvert : mets Paramètres et Shizuku côte à côte (écran partagé), lis le code d\'un côté et tape-le de l\'autre.</string>
+    <string name="step_pair_tip_closed">Fold fermé : tape le code directement dans la notification de Shizuku (déroule le volet, Saisir le code d\'association), ou ouvre le Fold pour voir les deux applis côte à côte.</string>
+    <string name="step_pair_tip_phone">Tape le code directement dans la notification de Shizuku : déroule le volet, puis Saisir le code d\'association.</string>
+    <string name="step_start">Démarre Shizuku</string>
+    <string name="step_start_body">Dans Shizuku : Démarrer. À refaire après chaque redémarrage : sans root, Shizuku ne démarre pas tout seul.</string>
+    <string name="step_grant">Autorise User Switch</string>
+    <string name="step_grant_body">Touche le bouton et accepte : le démon démarre, puis suit Shizuku désormais.</string>
 
     <!-- enregistrement et séquences -->
     <string name="record">Enregistrer une séquence</string>
+    <string name="record_fab">Enregistrer</string>
     <string name="record_cancel">Annuler l\'enregistrement</string>
+    <string name="recording_title">À l\'écoute des boutons…</string>
+    <string name="recording_left">Encore %1$d s</string>
     <string name="record_hint">Fais ta séquence sur les boutons maintenant, puis attends une seconde.\nAu moins 3 points : 1 par appui, +1 si appui long, +1 si plusieurs boutons ensemble.</string>
     <string name="sequences">Séquences</string>
-    <string name="no_sequences">Aucune séquence.</string>
+    <string name="no_sequences">Aucune séquence pour l\'instant</string>
+    <string name="no_sequences_hint">Enregistres-en une, puis choisis le profil qu\'elle ouvre.</string>
     <string name="delete">Supprimer</string>
     <string name="sequence_saved">Séquence enregistrée</string>
     <string name="cancel">Annuler</string>
@@ -32,7 +63,21 @@
     <string name="target_user">%1$s (%2$d)</string>
     <string name="target_unknown">Profil %1$s</string>
 
-    <string name="pc_help">Sans Shizuku, le démon se lance depuis le PC (à refaire après chaque redémarrage) :\n\n%1$s</string>
+    <!-- durcissement GrapheneOS -->
+    <string name="hardening_title">Durcissement GrapheneOS</string>
+    <string name="hardening_intro">L\'app bloque déjà les surimpressions, ignore les touchers à travers d\'autres fenêtres et demande le marquage mémoire. GrapheneOS peut la durcir davantage ; dans Paramètres › Applis › User Switch (les noms peuvent varier selon la version) :</string>
+    <string name="hardening_mte">Marquage mémoire (memory tagging) : activé (Pixel 8 et suivants).</string>
+    <string name="hardening_compat">Mode de compatibilité de la protection contre les exploits : désactivé.</string>
+    <string name="hardening_dcl">Chargement dynamique de code, depuis la mémoire et depuis le stockage : restreint. L\'app ne charge jamais de code.</string>
+    <string name="hardening_sensors">Autorisation Capteurs : refusée. L\'app lit les boutons via le démon, pas via les capteurs.</string>
+    <string name="hardening_daemon">Le démon tourne avec les droits shell d\'ADB, hors de ces réglages : si tu n\'utilises plus l\'app, arrête aussi le démon et Shizuku.</string>
+    <string name="hardening_button">Ouvrir les réglages de l\'app</string>
+
+    <!-- sans Shizuku -->
+    <string name="pc_help_title">Sans Shizuku : depuis un PC</string>
+    <string name="pc_help">Lance le démon avec ADB, à refaire après chaque redémarrage :</string>
+    <string name="copy">Copier</string>
+    <string name="copied">Commande copiée</string>
 
     <!-- rappel après redémarrage -->
     <string name="reminder_channel">Rappel après redémarrage</string>

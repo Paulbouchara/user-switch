@@ -151,6 +151,11 @@ public final class Store {
         return System.currentTimeMillis() < recordingUntil;
     }
 
+    /** Time left in the recording window, 0 when not recording. */
+    public synchronized long recordingLeftMs() {
+        return Math.max(0, recordingUntil - System.currentTimeMillis());
+    }
+
     /** Returns true when the burst was consumed by a recording. */
     public boolean offerRecording(String keys) {
         synchronized (this) {

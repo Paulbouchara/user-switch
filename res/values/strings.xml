@@ -2,32 +2,63 @@
 <!-- Default (English) strings. Translations live in values-<lang>/strings.xml. -->
 <resources>
     <string name="app_name" translatable="false">User Switch</string>
+    <string name="tagline">Switch profiles with a sequence on the side buttons.</string>
 
-    <!-- daemon status -->
-    <string name="daemon_waiting">Daemon: waiting for its signal (every 30 s).</string>
-    <string name="daemon_running">Daemon: running (pid %1$d)</string>
-    <string name="daemon_stopped">Daemon: stopped, or phone asleep (last sign %1$d s ago)</string>
+    <!-- status card -->
+    <string name="status_daemon">Daemon</string>
+    <string name="status_shizuku" translatable="false">Shizuku</string>
+    <string name="daemon_waiting">Waiting for its signal (every 30 s)</string>
+    <string name="daemon_running">Running · pid %1$d</string>
+    <string name="daemon_stopped">Stopped, or phone asleep (last sign %1$d s ago)</string>
 
     <!-- Shizuku -->
-    <string name="shizuku_not_installed">Shizuku: not installed. Install it to start the daemon without a computer.</string>
-    <string name="shizuku_not_running">Shizuku: installed but not started. Start it in the Shizuku app (wireless debugging); the daemon will follow on its own.</string>
-    <string name="shizuku_too_old">Shizuku: version too old, please update it.</string>
-    <string name="shizuku_needs_permission">Shizuku: started, permission to grant.</string>
-    <string name="shizuku_denied">Shizuku: permission denied. Grant it in the Shizuku app.</string>
-    <string name="shizuku_ready">Shizuku: ready.</string>
-    <string name="shizuku_running">Shizuku: the daemon runs through Shizuku. It will restart with Shizuku.</string>
+    <string name="shizuku_not_installed">Not installed. Install it to start the daemon without a computer.</string>
+    <string name="shizuku_not_running">Installed but not started. Start it in the Shizuku app; the daemon will follow on its own.</string>
+    <string name="shizuku_too_old">Version too old, please update it.</string>
+    <string name="shizuku_needs_permission">Started, permission to grant.</string>
+    <string name="shizuku_denied">Permission denied. Grant it in the Shizuku app.</string>
+    <string name="shizuku_ready">Ready.</string>
+    <string name="shizuku_running">Runs the daemon. It will restart with Shizuku.</string>
     <string name="open_shizuku">Open Shizuku</string>
     <string name="grant_and_start">Grant and start the daemon</string>
     <string name="retry">Retry</string>
-    <string name="start_daemon">Start the daemon through Shizuku</string>
+    <string name="start_daemon">Start the daemon</string>
     <string name="stop_daemon">Stop the daemon</string>
+
+    <!-- Shizuku setup guide -->
+    <string name="guide_title">Set up Shizuku</string>
+    <string name="guide_subtitle">Shizuku starts the daemon without a computer. One-time setup, about 2 minutes.</string>
+    <string name="guide_done">All set. After a reboot, only step 5 needs doing again.</string>
+    <string name="guide_show">Shizuku setup guide</string>
+    <string name="step_install">Install Shizuku</string>
+    <string name="step_install_body">From the Play Store, or from GitHub (RikkaApps/Shizuku).</string>
+    <string name="step_install_button">Get Shizuku</string>
+    <string name="step_dev">Turn on developer options</string>
+    <string name="step_dev_body">Settings › About phone: tap Build number 7 times.</string>
+    <string name="step_dev_button">Open About phone</string>
+    <string name="step_wireless">Turn on wireless debugging</string>
+    <string name="step_wireless_body">Connect to Wi-Fi, then Settings › System › Developer options › Wireless debugging.</string>
+    <string name="step_wireless_button">Open developer options</string>
+    <string name="step_pair">Pair Shizuku (once)</string>
+    <string name="step_pair_body">In Shizuku: Start via Wireless debugging › Pairing. Then in Wireless debugging: Pair device with pairing code, and type that code into Shizuku.</string>
+    <string name="step_pair_tip_open">Fold open: put Settings and Shizuku side by side (split screen), read the code on one side and type it on the other.</string>
+    <string name="step_pair_tip_closed">Fold closed: type the code straight into Shizuku\'s notification (pull down the shade, Enter pairing code), or open the Fold to see both apps side by side.</string>
+    <string name="step_pair_tip_phone">Type the code straight into Shizuku\'s notification: pull down the shade, then Enter pairing code.</string>
+    <string name="step_start">Start Shizuku</string>
+    <string name="step_start_body">In Shizuku: Start. Again after every reboot: without root, Shizuku cannot start on its own.</string>
+    <string name="step_grant">Allow User Switch</string>
+    <string name="step_grant_body">Tap the button and accept: the daemon starts, and follows Shizuku from then on.</string>
 
     <!-- recording and sequences -->
     <string name="record">Record a sequence</string>
+    <string name="record_fab">Record</string>
     <string name="record_cancel">Cancel recording</string>
+    <string name="recording_title">Listening to the buttons…</string>
+    <string name="recording_left">%1$d s left</string>
     <string name="record_hint">Do your sequence on the buttons now, then wait a second.\nAt least 3 points: 1 per press, +1 for a long press, +1 for several buttons together.</string>
     <string name="sequences">Sequences</string>
-    <string name="no_sequences">No sequences.</string>
+    <string name="no_sequences">No sequences yet</string>
+    <string name="no_sequences_hint">Record one, then pick the profile it opens.</string>
     <string name="delete">Delete</string>
     <string name="sequence_saved">Sequence saved</string>
     <string name="cancel">Cancel</string>
@@ -35,7 +66,21 @@
     <string name="target_user">%1$s (%2$d)</string>
     <string name="target_unknown">Profile %1$s</string>
 
-    <string name="pc_help">Without Shizuku, start the daemon from a computer (again after every reboot):\n\n%1$s</string>
+    <!-- GrapheneOS hardening -->
+    <string name="hardening_title">GrapheneOS hardening</string>
+    <string name="hardening_intro">This app already blocks overlays, ignores taps through other windows and asks for memory tagging. GrapheneOS can harden it further; in Settings › Apps › User Switch (names may vary by release):</string>
+    <string name="hardening_mte">Memory tagging: on (Pixel 8 and later).</string>
+    <string name="hardening_compat">Exploit protection compatibility mode: off.</string>
+    <string name="hardening_dcl">Dynamic code loading, from memory and from storage: restricted. The app never loads code.</string>
+    <string name="hardening_sensors">Sensors permission: denied. The app reads the buttons through the daemon, not through sensors.</string>
+    <string name="hardening_daemon">The daemon runs with ADB shell rights, outside these settings: if you stop using the app, stop the daemon and Shizuku too.</string>
+    <string name="hardening_button">Open the app\'s settings</string>
+
+    <!-- without Shizuku -->
+    <string name="pc_help_title">Without Shizuku: from a computer</string>
+    <string name="pc_help">Start the daemon with ADB, again after every reboot:</string>
+    <string name="copy">Copy</string>
+    <string name="copied">Command copied</string>
 
     <!-- after-boot reminder -->
     <string name="reminder_channel">Reminder after reboot</string>

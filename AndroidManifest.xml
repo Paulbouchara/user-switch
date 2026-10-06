@@ -8,24 +8,36 @@
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Window.setHideOverlayWindows (Hardening) -->
+    <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS" />
 
     <queries>
         <package android:name="moe.shizuku.privileged.api" />
+        <!-- GrapheneOS detection (Hardening.isGrapheneOs) -->
+        <package android:name="app.grapheneos.apps" />
+        <package android:name="app.grapheneos.info" />
     </queries>
 
+    <!-- memtagMode: sync memory tagging where the hardware and system offer it
+         (GrapheneOS, Pixel 8+ with MTE on); ignored elsewhere. -->
     <application
         android:name=".App"
         android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
         android:localeConfig="@xml/locales_config"
-        android:theme="@android:style/Theme.DeviceDefault.DayNight"
+        android:theme="@style/Theme.UserSwitch"
+        android:memtagMode="sync"
         android:allowBackup="false">
 
         <meta-data
             android:name="moe.shizuku.client.V3_SUPPORT"
             android:value="true" />
 
+        <!-- Folding and unfolding resize the window: MainActivity relays itself out
+             (one or two panes) instead of being recreated. -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|density"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
