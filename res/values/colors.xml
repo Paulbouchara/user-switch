@@ -22,7 +22,7 @@
     <color name="surface_container_highest">#E6E0E9</color>
     <color name="outline_variant">#CAC4D0</color>
 
-    <!-- launcher icon (fixed: the system themes the monochrome layer itself) -->
+    <!-- launcher icon before Android 12; from 12 on it follows the wallpaper (values-v31) -->
     <color name="icon_background">#EADDFF</color>
     <color name="icon_foreground">#4F378B</color>
 </resources>

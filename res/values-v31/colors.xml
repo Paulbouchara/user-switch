@@ -20,4 +20,8 @@
     <color name="surface_container_high">@android:color/system_neutral1_100</color>
     <color name="surface_container_highest">@android:color/system_neutral2_100</color>
     <color name="outline_variant">@android:color/system_neutral2_200</color>
+
+    <!-- launcher icon: wallpaper colors too (tones of Pixel's themed icons) -->
+    <color name="icon_background">@android:color/system_accent1_100</color>
+    <color name="icon_foreground">@android:color/system_accent1_700</color>
 </resources>
