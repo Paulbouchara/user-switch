@@ -17,9 +17,12 @@ final class Hardening {
     private Hardening() {
     }
 
-    /** GrapheneOS builds are made by user and host "grapheneos" and ship its own apps. */
+    /**
+     * GrapheneOS ships its own system apps. The build properties do not tell: its
+     * builds are reproducible, with a Google fingerprint and generic user and host
+     * ("android-user", "r-0123456789abcdef-0123" on a Pixel 10 Pro XL, Android 17).
+     */
     static boolean isGrapheneOs(Context ctx) {
-        if ("grapheneos".equalsIgnoreCase(Build.HOST) || "grapheneos".equalsIgnoreCase(Build.USER)) return true;
         PackageManager pm = ctx.getPackageManager();
         for (String p : new String[] {"app.grapheneos.apps", "app.grapheneos.info"}) {
             try {
