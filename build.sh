@@ -3,9 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-SDK=${ANDROID_HOME:-$HOME/Android/Sdk}
-BT=${BUILD_TOOLS:-/opt/android-sdk-update-manager/build-tools/36}
-JAR=$SDK/platforms/android-36/android.jar
+# Finds or downloads the SDK parts and checks libs/; sets BT and JAR.
+. scripts/setup.sh
 KS=${KEYSTORE:-$HOME/.android/debug.keystore}
 
 rm -rf build

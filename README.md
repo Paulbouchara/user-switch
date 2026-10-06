@@ -53,9 +53,25 @@ The daemon started by Shizuku survives profile switches. Only one daemon runs at
 
 ## Build and deploy
 
-Requirements: JDK 17 or later, build-tools 36, `platforms/android-36` in `~/Android/Sdk`. The Shizuku 13.1.5 client libraries (Maven Central `dev.rikka.shizuku:{api,provider,shared,aidl}`) are in `libs/`.
+To install first:
+
+| Tool | For | Gentoo | Arch | Debian / Ubuntu |
+|---|---|---|---|---|
+| JDK 17 or later (`javac`, `keytool`) | build | `dev-java/openjdk-bin` | `jdk-openjdk` | `openjdk-21-jdk-headless` (`openjdk-17-jdk-headless` on Debian 12) |
+| `zip`, `unzip` | build | `app-arch/zip` `app-arch/unzip` | `zip` `unzip` | `zip` `unzip` |
+| `curl` or `wget` | first build | `net-misc/curl` | `curl` | `curl` |
+| `adb` | deploy | `dev-util/android-tools` | `android-tools` | `adb` |
+| `nmap` | deploy, only to find the phone over Wi-Fi | `net-analyzer/nmap` | `nmap` | `nmap` |
+
+The rest is fetched by `scripts/setup.sh`, which `build.sh` runs first. Every file is checked against a SHA-256 pinned in that script.
+
+- **Android build-tools 36 and platform `android-36`**: taken from `$ANDROID_HOME`, `$ANDROID_SDK_ROOT` or `~/Android/Sdk` if one has both, otherwise downloaded from Google into `.sdk/` (about 130 MB, once; not committed). Downloading them means accepting the [Android SDK License Agreement](https://developer.android.com/studio/terms).
+- **Shizuku 13.1.5 client libraries** (Maven Central `dev.rikka.shizuku:{api,provider,shared,aidl}`): committed in `libs/`, fetched again if one is missing.
+
+Tested on Linux x86_64. Google also ships build-tools for macOS, pinned in `scripts/setup.sh` but untested; there are none for Linux on ARM.
 
 ```sh
+scripts/setup.sh        # optional: only fetches and checks (e.g. before going offline)
 ./build.sh              # → build/userswitch.apk
 adb tcpip 5555          # once per phone boot: unlike wireless debugging, this mode survives profile switches
 scripts/deploy.sh       # installs the app for profile 0 and (re)starts the daemon
@@ -64,6 +80,8 @@ scripts/deploy.sh --start   # only restarts the daemon (after a phone reboot)
 
 `scripts/phone.sh` picks a phone plugged in over USB first; otherwise it finds the phone on the network, whose IP changes on every Wi-Fi reconnect.
 Daemon log: `adb shell cat /data/local/tmp/userswitch.log`.
+
+**Signing key**: the APK is signed with `~/.android/debug.keystore`, created by the first build if missing (another keystore with password `android`: `KEYSTORE=<path> ./build.sh`). Android only updates an app signed with the same key: to deploy over an app built on another computer, copy that computer's keystore, or uninstall the app from the phone first (its sequences are lost). Keep the keystore out of git: its password is public.
 
 ## Tested compatibility
 
@@ -142,9 +160,25 @@ Le programme de fond lancé par Shizuku survit au changement de profil. Un seul 
 
 ### Compiler et déployer
 
-Prérequis : JDK 17 ou plus, build-tools 36, `platforms/android-36` dans `~/Android/Sdk`. Les bibliothèques client Shizuku 13.1.5 (Maven Central `dev.rikka.shizuku:{api,provider,shared,aidl}`) sont dans `libs/`.
+À installer d'abord :
+
+| Outil | Pour | Gentoo | Arch | Debian / Ubuntu |
+|---|---|---|---|---|
+| JDK 17 ou plus (`javac`, `keytool`) | compiler | `dev-java/openjdk-bin` | `jdk-openjdk` | `openjdk-21-jdk-headless` (`openjdk-17-jdk-headless` sur Debian 12) |
+| `zip`, `unzip` | compiler | `app-arch/zip` `app-arch/unzip` | `zip` `unzip` | `zip` `unzip` |
+| `curl` ou `wget` | première compilation | `net-misc/curl` | `curl` | `curl` |
+| `adb` | déployer | `dev-util/android-tools` | `android-tools` | `adb` |
+| `nmap` | déployer, seulement pour retrouver le téléphone en Wi-Fi | `net-analyzer/nmap` | `nmap` | `nmap` |
+
+Le reste est récupéré par `scripts/setup.sh`, que `build.sh` lance d'abord. Chaque fichier est vérifié avec un SHA-256 figé dans ce script.
+
+- **Build-tools Android 36 et plateforme `android-36`** : pris dans `$ANDROID_HOME`, `$ANDROID_SDK_ROOT` ou `~/Android/Sdk` si l'un a les deux, sinon téléchargés depuis Google dans `.sdk/` (environ 130 Mo, une seule fois ; pas versionné). Les télécharger vaut acceptation du [contrat de licence du SDK Android](https://developer.android.com/studio/terms).
+- **Bibliothèques client Shizuku 13.1.5** (Maven Central `dev.rikka.shizuku:{api,provider,shared,aidl}`) : versionnées dans `libs/`, retéléchargées s'il en manque une.
+
+Testé sous Linux x86_64. Google fournit aussi des build-tools pour macOS, figés dans `scripts/setup.sh` mais pas testés ; il n'y en a pas pour Linux sur ARM.
 
 ```sh
+scripts/setup.sh        # facultatif : récupère et vérifie seulement (par ex. avant de passer hors ligne)
 ./build.sh              # → build/userswitch.apk
 adb tcpip 5555          # une fois par démarrage du téléphone : contrairement au débogage sans fil, ce mode survit au changement de profil
 scripts/deploy.sh       # installe l'app pour le profil 0 et (re)lance le programme de fond
@@ -153,6 +187,8 @@ scripts/deploy.sh --start   # relance seulement le programme de fond (après un 
 
 `scripts/phone.sh` choisit d'abord un téléphone branché en USB ; sinon il retrouve le téléphone sur le réseau, dont l'IP change à chaque reconnexion Wi-Fi.
 Journal du programme de fond : `adb shell cat /data/local/tmp/userswitch.log`.
+
+**Clé de signature** : l'APK est signé avec `~/.android/debug.keystore`, créé par la première compilation s'il manque (autre keystore de mot de passe `android` : `KEYSTORE=<chemin> ./build.sh`). Android ne met à jour une app qu'avec la même clé : pour déployer par-dessus une app compilée sur un autre ordinateur, copie le keystore de cet ordinateur, ou désinstalle d'abord l'app du téléphone (ses séquences sont perdues). Garde le keystore hors de git : son mot de passe est public.
 
 ### Compatibilité testée
 
