@@ -212,6 +212,11 @@ public final class MainActivity extends Activity implements Store.Listener {
         FrameLayout frame = new FrameLayout(this);
         frame.addView(scroll, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        // Behind the status bar: the page scrolls under it, the clock must stay readable.
+        View statusScrim = new View(this);
+        statusScrim.setBackgroundColor(M3.withAlpha(m.color(R.color.surface), 0.94f));
+        FrameLayout.LayoutParams sp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, Gravity.TOP);
+        frame.addView(statusScrim, sp);
         FrameLayout.LayoutParams fp = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.END);
         frame.addView(fab, fp);
@@ -224,6 +229,8 @@ public final class MainActivity extends Activity implements Store.Listener {
                     bars.bottom + m.dp(56 + 16 + 24));
             fp.setMargins(0, 0, m.dp(16) + bars.right, m.dp(16) + bars.bottom);
             fab.setLayoutParams(fp);
+            sp.height = bars.top;
+            statusScrim.setLayoutParams(sp);
             return WindowInsets.CONSUMED;
         });
 
@@ -368,8 +375,8 @@ public final class MainActivity extends Activity implements Store.Listener {
                 R.string.hardening_dcl, R.string.hardening_sensors}) {
             LinearLayout item = m.row();
             item.setGravity(Gravity.TOP);
-            ImageView check = m.icon(R.drawable.ic_check, m.color(R.color.primary), 20);
-            item.addView(check);
+            // a recommendation the app cannot read back: an arrow, not a check mark
+            item.addView(m.icon(R.drawable.ic_arrow_forward, m.color(R.color.primary), 20));
             LinearLayout.LayoutParams lp = M3.weight();
             lp.setMarginStart(m.dp(12));
             item.addView(m.text(getString(res), Type.BODY_M, m.color(R.color.on_surface)), lp);
@@ -380,7 +387,7 @@ public final class MainActivity extends Activity implements Store.Listener {
         open.setOnClickListener(v -> launch(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.fromParts("package", getPackageName(), null))));
         body.addView(open, m.top(M3.wrap(), 16));
-        return expandable(R.drawable.ic_check, getString(R.string.hardening_title), hardeningOpen,
+        return expandable(R.drawable.ic_shield, getString(R.string.hardening_title), hardeningOpen,
                 () -> hardeningOpen = !hardeningOpen, body);
     }
 
