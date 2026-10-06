@@ -25,12 +25,17 @@ public final class ShizukuLauncher {
 
     public enum State { NOT_INSTALLED, NOT_RUNNING, TOO_OLD, NEEDS_PERMISSION, DENIED, READY, RUNNING }
 
+    private static final int MAX_RESTARTS = 3;
+    private static final long RESTART_WINDOW_MS = 5 * 60_000L;
+
     private static ShizukuLauncher instance;
 
     private final Context ctx;
     private final Shizuku.UserServiceArgs args;
     private boolean bound;
     private boolean denied;
+    private int restarts;
+    private long restartWindowStart;
     private Runnable listener;
 
     private final ServiceConnection connection = new ServiceConnection() {
@@ -50,6 +55,20 @@ public final class ShizukuLauncher {
         public void onServiceDisconnected(ComponentName name) {
             bound = false;
             Log.i(TAG, "daemon service disconnected");
+            // The daemon died while Shizuku still runs (crash, killed): nothing else would
+            // bring it back, since Shizuku only resends its binder once per app process.
+            // Restart it, but give up on one that keeps dying.
+            long now = android.os.SystemClock.elapsedRealtime();
+            if (now - restartWindowStart > RESTART_WINDOW_MS) {
+                restartWindowStart = now;
+                restarts = 0;
+            }
+            if (restarts < MAX_RESTARTS) {
+                restarts++;
+                startIfGranted();
+            } else {
+                Log.w(TAG, "daemon died " + restarts + " times in a row, not restarting it");
+            }
             changed();
         }
     };
@@ -110,6 +129,7 @@ public final class ShizukuLauncher {
      * the user stopped it; never prompts. Returns whether a bind was attempted.
      */
     public boolean startIfGranted() {
+        if (bound) return true;
         if (userStopped(ctx) || !isGranted()) return false;
         start();
         return true;

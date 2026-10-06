@@ -110,6 +110,8 @@ public final class MainActivity extends Activity implements Store.Listener {
         super.onResume();
         store.setListener(this);
         shizuku.setListener(this::onChanged);
+        // Opening the app brings a dead daemon back (unless it was stopped from here).
+        shizuku.startIfGranted();
         handler.post(tick);
     }
 
