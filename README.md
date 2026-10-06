@@ -14,9 +14,9 @@ Score d'une séquence : 1 point par appui, +1 pour un appui long (≥ 500 ms), +
 L'app lance le programme de fond comme UserService Shizuku (`DaemonService`, droits shell).
 
 1. Installe Shizuku, démarre-le (débogage sans fil), puis ouvre User Switch et accorde l'autorisation.
-2. **Après un redémarrage** : sans root, Shizuku ne démarre pas tout seul. Une notification le rappelle (bouton « Ouvrir Shizuku »). Une fois Shizuku démarré, le programme de fond repart **tout seul en 1 à 2 minutes**, sans ouvrir l'app ; toucher la notification le relance tout de suite.
+2. **Après un redémarrage** : sans root, Shizuku ne démarre pas tout seul. Une notification le rappelle (bouton « Ouvrir Shizuku »). Une fois Shizuku démarré, le programme de fond repart **tout seul, en général en 1 à 2 minutes** (parfois plus : Android espace les alarmes des apps rarement ouvertes), sans ouvrir l'app ; toucher la notification le relance tout de suite.
 
-   Pourquoi ce délai : Shizuku n'envoie son binder qu'à sa propre app au démarrage, et aux autres apps autorisées seulement quand leur processus change d'état. `ShizukuWatch` (une alarme non réveillante, toutes les 60 s, armée au démarrage et quand Shizuku s'arrête) provoque ce changement d'état. Le système le provoque aussi de lui-même environ 90 s après. L'alarme se désarme dès que le programme de fond tourne, et abandonne au bout de 6 h.
+   Pourquoi ce délai : Shizuku n'envoie son binder qu'à sa propre app au démarrage, et aux autres apps autorisées seulement quand leur processus change d'état. `ShizukuWatch` (une alarme non réveillante, toutes les 60 s, armée au démarrage et quand Shizuku s'arrête) provoque ce changement d'état. Le système le provoque aussi de lui-même environ 90 s après. L'alarme n'est armée que si le programme de fond a déjà tourné une fois via Shizuku, et pas si tu l'as arrêté toi-même. Elle se désarme dès qu'il tourne, et abandonne au bout de 6 h ou après 3 lancements sans connexion (programme de fond qui plante).
 
 Le programme de fond lancé par Shizuku survit au changement de profil. Un seul programme de fond tourne à la fois : celui qui démarre arrête l'autre (fichier `/data/local/tmp/userswitch.pid`).
 

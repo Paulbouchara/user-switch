@@ -208,9 +208,9 @@ public final class Store {
         return sb.toString();
     }
 
-    public String targetLabel(String target) {
+    public static String targetLabel(String target, List<User> users) {
         if ("next".equals(target)) return "Profil suivant";
-        for (User u : users()) if (Integer.toString(u.id).equals(target)) return u.name + " (" + u.id + ")";
+        for (User u : users) if (Integer.toString(u.id).equals(target)) return u.name + " (" + u.id + ")";
         return "Profil " + target;
     }
 }

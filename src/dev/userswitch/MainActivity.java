@@ -147,7 +147,7 @@ public final class MainActivity extends Activity implements Store.Listener {
         long seen = store.daemonSeenAt();
         long ago = (System.currentTimeMillis() - seen) / 1000;
         if (seen == 0) {
-            status.setText("Démon : jamais vu.");
+            status.setText("Démon : en attente de son signal (toutes les 30 s).");
         } else if (ago <= 2 * HEARTBEAT_S) {
             status.setText("Démon : actif (pid " + store.daemonPid() + ")");
         } else {
@@ -166,18 +166,25 @@ public final class MainActivity extends Activity implements Store.Listener {
         if (recorded != null) chooseTarget(recorded);
 
         List<Store.Sequence> seqs = store.sequences();
+        List<Store.User> users = store.users();
+        List<String> labels = new ArrayList<>();
         StringBuilder sig = new StringBuilder();
-        for (Store.Sequence s : seqs) sig.append(s.keys).append('>').append(store.targetLabel(s.target)).append(';');
+        for (Store.Sequence s : seqs) {
+            String label = Store.targetLabel(s.target, users);
+            labels.add(label);
+            sig.append(s.keys).append('>').append(label).append(';');
+        }
         if (sig.toString().equals(shownList)) return;
         shownList = sig.toString();
 
         list.removeAllViews();
         if (seqs.isEmpty()) list.addView(text("Aucune séquence.", 15));
-        for (Store.Sequence s : seqs) {
+        for (int i = 0; i < seqs.size(); i++) {
+            Store.Sequence s = seqs.get(i);
             LinearLayout row = new LinearLayout(this);
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.setPadding(0, dp(6), 0, dp(6));
-            TextView label = text(Store.pretty(s.keys) + "\n→ " + store.targetLabel(s.target), 15);
+            TextView label = text(Store.pretty(s.keys) + "\n→ " + labels.get(i), 15);
             row.addView(label, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             Button del = new Button(this);
             del.setText("Supprimer");

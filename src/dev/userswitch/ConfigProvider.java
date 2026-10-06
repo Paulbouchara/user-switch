@@ -34,7 +34,10 @@ public final class ConfigProvider extends ContentProvider {
         Store store = Store.get(getContext());
         if (extras != null) {
             store.daemonSeen(extras.getInt("pid", -1), decode(extras.getString("users")));
-            if ("hello".equals(method)) ShizukuWatch.disarm(getContext()); // e.g. started from the PC
+            if ("hello".equals(method)) { // a daemon is up, however it was started (e.g. from the PC)
+                ShizukuWatch.disarm(getContext());
+                BootReceiver.cancelReminder(getContext());
+            }
         }
         Bundle result = new Bundle();
         if ("remind".equals(method)) {

@@ -25,6 +25,8 @@ public final class ShizukuWatch extends BroadcastReceiver {
     /** Give up after this long, so a phone where Shizuku is never started stops waking us. */
     private static final long GIVE_UP_MS = 6 * 60 * 60_000L;
     private static final String PREFS = "watch";
+    /** Binds attempted while Shizuku runs without the daemon ever connecting: it is crashing, stop. */
+    private static final int MAX_ATTEMPTS = 3;
 
     @Override
     public void onReceive(Context ctx, Intent intent) {
@@ -37,16 +39,29 @@ public final class ShizukuWatch extends BroadcastReceiver {
         Log.i(TAG, "Shizuku watch: tick");
         // The delivery itself is what makes Shizuku send its binder; if it already
         // did, this (re)binds the daemon, which disarms the watch on connection.
-        ShizukuLauncher.get(ctx).startIfGranted();
+        if (!ShizukuLauncher.get(ctx).startIfGranted()) return;
+        android.content.SharedPreferences prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        int attempts = prefs.getInt("attempts", 0) + 1;
+        prefs.edit().putInt("attempts", attempts).apply();
+        if (attempts >= MAX_ATTEMPTS) {
+            Log.w(TAG, "Shizuku watch: daemon never connected after " + attempts + " binds, giving up");
+            disarm(ctx);
+        }
     }
 
-    /** Arms the watch if Shizuku is installed. Safe to call repeatedly. */
+    /**
+     * Arms the watch if the daemon already ran through Shizuku once (so neither a
+     * phone without Shizuku nor one that only uses the PC launch gets woken up).
+     * Safe to call repeatedly.
+     */
     public static void arm(Context ctx) {
-        if (!ShizukuLauncher.isInstalled(ctx)) return;
+        if (!ShizukuLauncher.isInstalled(ctx) || !ShizukuLauncher.everConnected(ctx)) return;
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-                .putLong("armedAt", SystemClock.elapsedRealtime()).apply();
+                .putLong("armedAt", SystemClock.elapsedRealtime()).putInt("attempts", 0).apply();
         // Not a wakeup alarm: it only fires while the phone is awake, which is
-        // when someone is starting Shizuku anyway.
+        // when someone is starting Shizuku anyway. Repeating alarms are inexact and
+        // App Standby may space them further; the system also changes the cached
+        // process state on its own after ~90 s, which delivers the binder too.
         ctx.getSystemService(AlarmManager.class).setRepeating(AlarmManager.ELAPSED_REALTIME,
                 SystemClock.elapsedRealtime() + INTERVAL_MS, INTERVAL_MS, intent(ctx));
         Log.i(TAG, "Shizuku watch armed");

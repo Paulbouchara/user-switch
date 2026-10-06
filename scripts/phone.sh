@@ -14,6 +14,13 @@ try() {
         [ "$(timeout 5 adb -s "$1" shell echo ok 2>/dev/null | tr -d '\r')" = ok ]
 }
 
+# A phone plugged in over USB needs none of the network dance.
+usb=$(adb devices | awk 'NR>1 && $2=="device" && $1!~/:/{print $1; exit}')
+if [ -n "$usb" ]; then
+    echo "$usb"
+    exit 0
+fi
+
 if [ -f "$CACHE" ] && try "$(cat "$CACHE")"; then
     cat "$CACHE"
     exit 0

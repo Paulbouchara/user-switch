@@ -38,7 +38,7 @@ public final class BootReceiver extends BroadcastReceiver {
         Notification.Builder b = new Notification.Builder(ctx, CHANNEL)
                 .setSmallIcon(android.R.drawable.ic_menu_rotate)
                 .setContentTitle("User Switch inactif")
-                .setContentText("Démarre Shizuku : le démon suivra tout seul en moins d'une minute.")
+                .setContentText("Démarre Shizuku : le démon suivra tout seul en 1 à 2 minutes (ou touche ici).")
                 .setContentIntent(open)
                 .setAutoCancel(true);
 

@@ -36,6 +36,8 @@ public final class ShizukuLauncher {
             bound = binder != null && binder.pingBinder();
             Log.i(TAG, "daemon service connected: " + bound);
             if (bound) {
+                ctx.getSharedPreferences("launcher", Context.MODE_PRIVATE).edit()
+                        .putBoolean("everConnected", true).apply();
                 BootReceiver.cancelReminder(ctx);
                 ShizukuWatch.disarm(ctx);
             }
@@ -65,8 +67,9 @@ public final class ShizukuLauncher {
         });
         Shizuku.addBinderDeadListener(() -> {
             bound = false;
-            // Shizuku stopped (and the daemon with it): restart both as soon as Shizuku is back
-            ShizukuWatch.arm(this.ctx);
+            // Shizuku stopped (and the daemon with it): restart the daemon as soon as
+            // Shizuku is back, unless the user stopped the daemon on purpose
+            if (!userStopped()) ShizukuWatch.arm(this.ctx);
             changed();
         });
         Shizuku.addRequestPermissionResultListener((requestCode, result) -> {
@@ -100,9 +103,27 @@ public final class ShizukuLauncher {
         return State.READY;
     }
 
-    /** Starts (or reuses) the daemon when Shizuku runs and already granted us; never prompts. */
-    public void startIfGranted() {
-        if (isGranted() && !Shizuku.isPreV11()) start();
+    /**
+     * Starts (or reuses) the daemon when Shizuku runs and already granted us, unless
+     * the user stopped it; never prompts. Returns whether a bind was attempted.
+     */
+    public boolean startIfGranted() {
+        if (userStopped() || !isGranted()) return false;
+        start();
+        return true;
+    }
+
+    /** Whether the daemon has ever run through Shizuku on this install. */
+    public static boolean everConnected(Context ctx) {
+        return ctx.getSharedPreferences("launcher", Context.MODE_PRIVATE).getBoolean("everConnected", false);
+    }
+
+    private boolean userStopped() {
+        return ctx.getSharedPreferences("launcher", Context.MODE_PRIVATE).getBoolean("userStopped", false);
+    }
+
+    private void setUserStopped(boolean stopped) {
+        ctx.getSharedPreferences("launcher", Context.MODE_PRIVATE).edit().putBoolean("userStopped", stopped).apply();
     }
 
     /** Asks for the permission if needed, then starts (or reuses) the daemon. */
@@ -112,6 +133,7 @@ public final class ShizukuLauncher {
             Shizuku.requestPermission(PERMISSION_REQUEST);
             return;
         }
+        setUserStopped(false);
         try {
             Shizuku.bindUserService(args, connection);
         } catch (RuntimeException e) {
@@ -119,8 +141,10 @@ public final class ShizukuLauncher {
         }
     }
 
-    /** Kills the Shizuku-started daemon. */
+    /** Kills the Shizuku-started daemon; it stays off until started again from the app. */
     public void stop() {
+        setUserStopped(true);
+        ShizukuWatch.disarm(ctx);
         if (!Shizuku.pingBinder()) return;
         try {
             Shizuku.unbindUserService(args, connection, true);

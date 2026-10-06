@@ -52,6 +52,7 @@ public final class Main {
     static final String PID_FILE = "/data/local/tmp/userswitch.pid";
 
     static final int EV_SYN = 0;
+    static final int SYN_REPORT = 0;
     static final int SYN_DROPPED = 3;
     static final int EV_KEY = 1;
     static final int KEY_VOLUMEDOWN = 114;
@@ -143,6 +144,7 @@ public final class Main {
     private void readLoop(String dev) {
         byte[] buf = new byte[EVENT_SIZE];
         ByteBuffer bb = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN);
+        boolean dropping = false;
         try (InputStream in = new FileInputStream(dev)) {
             while (true) {
                 int n = 0;
@@ -157,8 +159,14 @@ public final class Main {
                 int code = bb.getShort(18) & 0xffff;
                 int value = bb.getInt(20);
                 if (type == EV_SYN && code == SYN_DROPPED) {
-                    // the kernel dropped events: key releases may be lost, start over
+                    // the kernel dropped events: key releases may be lost, start over and,
+                    // as evdev requires, ignore everything up to the next SYN_REPORT
                     exec.execute(this::resetKeys);
+                    dropping = true;
+                    continue;
+                }
+                if (dropping) {
+                    if (type == EV_SYN && code == SYN_REPORT) dropping = false;
                     continue;
                 }
                 if (type != EV_KEY) continue;
@@ -248,7 +256,6 @@ public final class Main {
             Bundle extras = new Bundle();
             // content's --extra splits on ':' so the fallback needs it encoded; keep one format
             extras.putString("users", android.net.Uri.encode(usersJson()));
-            extras.putInt("current", currentUser());
             extras.putInt("pid", android.os.Process.myPid());
             Bundle result = callApp(method, arg.isEmpty() ? null : arg, extras);
             long t1 = System.currentTimeMillis();
@@ -313,7 +320,6 @@ public final class Main {
             cmd.add(arg);
         }
         cmd.addAll(List.of("--extra", "users:s:" + extras.getString("users"),
-                "--extra", "current:i:" + extras.getInt("current"),
                 "--extra", "pid:i:" + extras.getInt("pid")));
         String out = sh(cmd.toArray(new String[0]));
         if (!out.contains("Result:")) throw new IOException("content: " + out.trim());
