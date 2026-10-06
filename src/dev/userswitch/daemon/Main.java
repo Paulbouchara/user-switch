@@ -72,7 +72,10 @@ public final class Main {
     static final int FLAG_FULL = 0x400;
     static final int FLAG_PROFILE = 0x1000;
 
+    /** Key handling only: it must never wait on IPC, or presses queue and timings drift. */
     private final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+    /** Calls to the app (hello, pings, bursts) and user switches, in order, off the key thread. */
+    private final ScheduledExecutorService ipc = Executors.newSingleThreadScheduledExecutor();
     private final Set<Integer> held = new HashSet<>();
     private final TreeSet<Integer> groupKeys = new TreeSet<>();
     private final List<String> tokens = new ArrayList<>();
@@ -99,13 +102,13 @@ public final class Main {
         }
 
         List<String> devices = findKeyDevices();
-        if (devices.isEmpty()) throw new IllegalStateException("no input device with volume keys");
+        if (devices.isEmpty()) throw new IllegalStateException("no input device with volume or power keys");
         log("input devices: " + devices);
 
         refreshUsers();
-        exec.execute(() -> notifyApp("hello", "", false));
+        ipc.execute(() -> notifyApp("hello", "", false));
         // lets the app show whether a daemon is alive; one binder call, no process spawned
-        exec.scheduleWithFixedDelay(() -> notifyApp("ping", "", false), HEARTBEAT_S, HEARTBEAT_S, TimeUnit.SECONDS);
+        ipc.scheduleWithFixedDelay(() -> notifyApp("ping", "", false), HEARTBEAT_S, HEARTBEAT_S, TimeUnit.SECONDS);
 
         List<Thread> readers = new ArrayList<>();
         for (String dev : devices) {
@@ -122,7 +125,9 @@ public final class Main {
     // ---- input -------------------------------------------------------------
 
     /**
-     * Event devices that report KEY_VOLUMEUP. SELinux hides /proc/bus/input
+     * Event devices that report any of our keys (the power button is its own
+     * node on some phones; on Pixels it shares gpio_keys with the volume
+     * keys). SELinux hides /proc/bus/input
      * and the sysfs capabilities from the shell, but getevent (which asks the
      * devices themselves) is allowed.
      */
@@ -133,7 +138,8 @@ public final class Main {
             Matcher m = Pattern.compile("add device \\d+: (/dev/input/event\\d+)").matcher(line);
             if (m.find()) {
                 device = m.group(1);
-            } else if (device != null && line.contains("KEY_VOLUMEUP")) {
+            } else if (device != null && (line.contains("KEY_VOLUMEUP")
+                    || line.contains("KEY_VOLUMEDOWN") || line.contains("KEY_POWER"))) {
                 out.add(device);
                 device = null;
             }
@@ -179,7 +185,7 @@ public final class Main {
         }
     }
 
-    /** Runs on the executor thread only. */
+    /** Runs on the key executor only. */
     private void onKey(int code, int value, long t) {
         if (value == 2) return; // autorepeat
         if (value == 1) {
@@ -246,11 +252,12 @@ public final class Main {
         String seq = String.join(" ", burst);
         if (score(burst) < MIN_SCORE) return;
         log("burst: " + seq);
-        notifyApp("burst", seq, true);
+        ipc.execute(() -> notifyApp("burst", seq, true));
     }
 
     // ---- app ---------------------------------------------------------------
 
+    // touched only on the ipc thread
     private final IBinder providerToken = new Binder();
     private Object provider; // IContentProvider for AUTHORITY in user 0
     private boolean directCallBroken;
@@ -341,24 +348,34 @@ public final class Main {
     // ---- users -------------------------------------------------------------
 
     private final ExecutorService bg = Executors.newSingleThreadExecutor();
-    private volatile List<int[]> userIds = new ArrayList<>();
-    private volatile List<String> userNames = new ArrayList<>();
+    /** Ids and names published together, so a reader never pairs new names with old ids. */
+    private static final class Users {
+        final List<int[]> ids;
+        final List<String> names;
+
+        Users(List<int[]> ids, List<String> names) {
+            this.ids = ids;
+            this.names = names;
+        }
+    }
+
+    private volatile Users users = new Users(new ArrayList<>(), new ArrayList<>());
 
     private void refreshUsers() {
         try {
             List<int[]> ids = new ArrayList<>();
             List<String> names = new ArrayList<>();
             listUsers(ids, names);
-            userNames = names;
-            userIds = ids;
+            users = new Users(ids, names);
         } catch (Exception e) {
             log("listing users failed: " + e);
         }
     }
 
     private String usersJson() throws Exception {
-        List<int[]> ids = userIds;
-        List<String> names = userNames;
+        Users snapshot = users;
+        List<int[]> ids = snapshot.ids;
+        List<String> names = snapshot.names;
         JSONArray ja = new JSONArray();
         for (int i = 0; i < ids.size() && i < names.size(); i++) {
             ja.put(new JSONObject().put("id", ids.get(i)[0]).put("name", names.get(i)));
@@ -367,7 +384,7 @@ public final class Main {
     }
 
     private void switchTo(String target) throws Exception {
-        List<int[]> users = userIds;
+        List<int[]> users = this.users.ids;
         int current = currentUser();
         int dest;
         if (target.equals("next")) {

@@ -72,18 +72,26 @@ public final class Store {
 
     // ---- sequences ---------------------------------------------------------
 
+    /** Parsed once, then kept: the UI asks every second and every burst is matched against it. */
+    private List<Sequence> sequencesCache;
+    private List<User> usersCache;
+
+    /** A fresh copy the caller may modify. */
     public synchronized List<Sequence> sequences() {
-        List<Sequence> out = new ArrayList<>();
-        try {
-            JSONArray a = new JSONArray(prefs.getString("sequences", "[]"));
-            for (int i = 0; i < a.length(); i++) {
-                JSONObject o = a.getJSONObject(i);
-                out.add(new Sequence(o.getString("keys"), o.getString("target")));
+        if (sequencesCache == null) {
+            List<Sequence> out = new ArrayList<>();
+            try {
+                JSONArray a = new JSONArray(prefs.getString("sequences", "[]"));
+                for (int i = 0; i < a.length(); i++) {
+                    JSONObject o = a.getJSONObject(i);
+                    out.add(new Sequence(o.getString("keys"), o.getString("target")));
+                }
+            } catch (JSONException ignored) {
+                // corrupt config: start empty
             }
-        } catch (JSONException ignored) {
-            // corrupt config: start empty
+            sequencesCache = out;
         }
-        return out;
+        return new ArrayList<>(sequencesCache);
     }
 
     private void saveSequences(List<Sequence> list) {
@@ -94,6 +102,7 @@ public final class Store {
             throw new IllegalStateException(e);
         }
         prefs.edit().putString("sequences", a.toString()).apply();
+        sequencesCache = new ArrayList<>(list);
     }
 
     /** Adds or replaces the sequence with the same keys. */
@@ -165,8 +174,11 @@ public final class Store {
     public void daemonSeen(int pid, String usersJson) {
         daemonSeenAt = System.currentTimeMillis();
         daemonPid = pid;
-        if (usersJson != null && !usersJson.equals(prefs.getString("users", null))) {
-            prefs.edit().putString("users", usersJson).apply();
+        synchronized (this) {
+            if (usersJson != null && !usersJson.equals(prefs.getString("users", null))) {
+                prefs.edit().putString("users", usersJson).apply();
+                usersCache = null;
+            }
         }
         changed();
     }
@@ -179,18 +191,21 @@ public final class Store {
         return daemonPid;
     }
 
-    public List<User> users() {
-        List<User> out = new ArrayList<>();
-        try {
-            JSONArray a = new JSONArray(prefs.getString("users", "[]"));
-            for (int i = 0; i < a.length(); i++) {
-                JSONObject o = a.getJSONObject(i);
-                out.add(new User(o.getInt("id"), o.getString("name")));
+    public synchronized List<User> users() {
+        if (usersCache == null) {
+            List<User> out = new ArrayList<>();
+            try {
+                JSONArray a = new JSONArray(prefs.getString("users", "[]"));
+                for (int i = 0; i < a.length(); i++) {
+                    JSONObject o = a.getJSONObject(i);
+                    out.add(new User(o.getInt("id"), o.getString("name")));
+                }
+            } catch (JSONException ignored) {
+                // nothing reported yet
             }
-        } catch (JSONException ignored) {
-            // nothing reported yet
+            usersCache = out;
         }
-        return out;
+        return new ArrayList<>(usersCache);
     }
 
     // ---- display -----------------------------------------------------------
