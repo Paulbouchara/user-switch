@@ -36,7 +36,10 @@ public final class ConfigProvider extends ContentProvider {
             store.daemonSeen(extras.getInt("pid", -1), extras.getInt("current", -1), decode(extras.getString("users")));
         }
         Bundle result = new Bundle();
-        if ("dump".equals(method)) {
+        if ("remind".equals(method)) {
+            // lets `content call ... --method remind` show the after-boot reminder without rebooting
+            BootReceiver.showReminder(getContext());
+        } else if ("dump".equals(method)) {
             StringBuilder sb = new StringBuilder();
             for (Store.Sequence s : store.sequences()) sb.append(s.keys).append(" -> ").append(s.target).append("; ");
             result.putString("sequences", sb.toString());

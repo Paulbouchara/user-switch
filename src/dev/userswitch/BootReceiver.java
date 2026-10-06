@@ -15,7 +15,9 @@ import android.content.Intent;
  * which opens the app, gets the binder and starts the daemon.
  */
 public final class BootReceiver extends BroadcastReceiver {
-    private static final String CHANNEL = "start";
+    /** High importance so the reminder shows as a heads-up right after boot. */
+    private static final String CHANNEL = "reminder";
+    private static final String OLD_CHANNEL = "start";
     private static final int ID = 1;
 
     @Override
@@ -25,8 +27,9 @@ public final class BootReceiver extends BroadcastReceiver {
 
     static void showReminder(Context ctx) {
         NotificationManager nm = ctx.getSystemService(NotificationManager.class);
+        nm.deleteNotificationChannel(OLD_CHANNEL);
         nm.createNotificationChannel(new NotificationChannel(
-                CHANNEL, "Démarrage du démon", NotificationManager.IMPORTANCE_DEFAULT));
+                CHANNEL, "Rappel après redémarrage", NotificationManager.IMPORTANCE_HIGH));
 
         PendingIntent open = PendingIntent.getActivity(ctx, 0,
                 new Intent(ctx, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
