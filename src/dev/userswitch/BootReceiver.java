@@ -23,8 +23,10 @@ public final class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context ctx, Intent intent) {
         if (!Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) return;
-        // Only for Shizuku users: someone launching the daemon from the PC has nothing to start here.
-        if (!ShizukuLauncher.isInstalled(ctx) || !ShizukuLauncher.everConnected(ctx)) return;
+        // Only for Shizuku users: someone launching the daemon from the PC has nothing to start
+        // here, and a daemon the user stopped stays stopped.
+        if (!ShizukuLauncher.isInstalled(ctx) || !ShizukuLauncher.everConnected(ctx)
+                || ShizukuLauncher.userStopped(ctx)) return;
         ShizukuWatch.arm(ctx);
         showReminder(ctx);
     }

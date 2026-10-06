@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -25,12 +26,15 @@ public final class ShizukuWatch extends BroadcastReceiver {
     /** Give up after this long, so a phone where Shizuku is never started stops waking us. */
     private static final long GIVE_UP_MS = 6 * 60 * 60_000L;
     private static final String PREFS = "watch";
+    private static final String KEY_ARMED_AT = "armedAt";
+    private static final String KEY_ATTEMPTS = "attempts";
     /** Binds attempted while Shizuku runs without the daemon ever connecting: it is crashing, stop. */
     private static final int MAX_ATTEMPTS = 3;
 
     @Override
     public void onReceive(Context ctx, Intent intent) {
-        long armedAt = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong("armedAt", 0);
+        SharedPreferences prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        long armedAt = prefs.getLong(KEY_ARMED_AT, 0);
         if (SystemClock.elapsedRealtime() - armedAt > GIVE_UP_MS) {
             Log.i(TAG, "Shizuku watch: giving up");
             disarm(ctx);
@@ -40,9 +44,8 @@ public final class ShizukuWatch extends BroadcastReceiver {
         // The delivery itself is what makes Shizuku send its binder; if it already
         // did, this (re)binds the daemon, which disarms the watch on connection.
         if (!ShizukuLauncher.get(ctx).startIfGranted()) return;
-        android.content.SharedPreferences prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        int attempts = prefs.getInt("attempts", 0) + 1;
-        prefs.edit().putInt("attempts", attempts).apply();
+        int attempts = prefs.getInt(KEY_ATTEMPTS, 0) + 1;
+        prefs.edit().putInt(KEY_ATTEMPTS, attempts).apply();
         if (attempts >= MAX_ATTEMPTS) {
             Log.w(TAG, "Shizuku watch: daemon never connected after " + attempts + " binds, giving up");
             disarm(ctx);
@@ -57,7 +60,7 @@ public final class ShizukuWatch extends BroadcastReceiver {
     public static void arm(Context ctx) {
         if (!ShizukuLauncher.isInstalled(ctx) || !ShizukuLauncher.everConnected(ctx)) return;
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-                .putLong("armedAt", SystemClock.elapsedRealtime()).putInt("attempts", 0).apply();
+                .putLong(KEY_ARMED_AT, SystemClock.elapsedRealtime()).putInt(KEY_ATTEMPTS, 0).apply();
         // Not a wakeup alarm: it only fires while the phone is awake, which is
         // when someone is starting Shizuku anyway. Repeating alarms are inexact and
         // App Standby may space them further; the system also changes the cached

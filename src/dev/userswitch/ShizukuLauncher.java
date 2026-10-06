@@ -19,6 +19,9 @@ public final class ShizukuLauncher {
     public static final String SHIZUKU_PACKAGE = "moe.shizuku.privileged.api";
     private static final int PERMISSION_REQUEST = 1;
     private static final String TAG = "userswitch";
+    private static final String PREFS = "launcher";
+    private static final String KEY_EVER_CONNECTED = "everConnected";
+    private static final String KEY_USER_STOPPED = "userStopped";
 
     public enum State { NOT_INSTALLED, NOT_RUNNING, TOO_OLD, NEEDS_PERMISSION, DENIED, READY, RUNNING }
 
@@ -36,8 +39,7 @@ public final class ShizukuLauncher {
             bound = binder != null && binder.pingBinder();
             Log.i(TAG, "daemon service connected: " + bound);
             if (bound) {
-                ctx.getSharedPreferences("launcher", Context.MODE_PRIVATE).edit()
-                        .putBoolean("everConnected", true).apply();
+                prefs(ctx).edit().putBoolean(KEY_EVER_CONNECTED, true).apply();
                 BootReceiver.cancelReminder(ctx);
                 ShizukuWatch.disarm(ctx);
             }
@@ -69,7 +71,7 @@ public final class ShizukuLauncher {
             bound = false;
             // Shizuku stopped (and the daemon with it): restart the daemon as soon as
             // Shizuku is back, unless the user stopped the daemon on purpose
-            if (!userStopped()) ShizukuWatch.arm(this.ctx);
+            if (!userStopped(this.ctx)) ShizukuWatch.arm(this.ctx);
             changed();
         });
         Shizuku.addRequestPermissionResultListener((requestCode, result) -> {
@@ -108,22 +110,27 @@ public final class ShizukuLauncher {
      * the user stopped it; never prompts. Returns whether a bind was attempted.
      */
     public boolean startIfGranted() {
-        if (userStopped() || !isGranted()) return false;
+        if (userStopped(ctx) || !isGranted()) return false;
         start();
         return true;
     }
 
     /** Whether the daemon has ever run through Shizuku on this install. */
     public static boolean everConnected(Context ctx) {
-        return ctx.getSharedPreferences("launcher", Context.MODE_PRIVATE).getBoolean("everConnected", false);
+        return prefs(ctx).getBoolean(KEY_EVER_CONNECTED, false);
     }
 
-    private boolean userStopped() {
-        return ctx.getSharedPreferences("launcher", Context.MODE_PRIVATE).getBoolean("userStopped", false);
+    /** The user stopped the daemon from the app: nothing restarts it until started there again. */
+    public static boolean userStopped(Context ctx) {
+        return prefs(ctx).getBoolean(KEY_USER_STOPPED, false);
     }
 
     private void setUserStopped(boolean stopped) {
-        ctx.getSharedPreferences("launcher", Context.MODE_PRIVATE).edit().putBoolean("userStopped", stopped).apply();
+        prefs(ctx).edit().putBoolean(KEY_USER_STOPPED, stopped).apply();
+    }
+
+    private static android.content.SharedPreferences prefs(Context ctx) {
+        return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
     /** Asks for the permission if needed, then starts (or reuses) the daemon. */

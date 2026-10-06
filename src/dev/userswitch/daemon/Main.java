@@ -202,8 +202,13 @@ public final class Main {
         }
     }
 
-    /** Forgets keys held and the burst in progress, so a lost release cannot block bursts forever. */
+    /**
+     * Forgets keys held, so a lost release cannot block bursts forever. The burst
+     * is dropped only if a press was in progress (it can no longer be trusted); a
+     * finished burst waiting out its gap is kept and still reported.
+     */
     private void resetKeys() {
+        if (held.isEmpty()) return;
         held.clear();
         groupKeys.clear();
         tokens.clear();
