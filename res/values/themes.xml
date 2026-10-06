@@ -13,7 +13,9 @@
         <item name="android:windowBackground">@color/surface</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:enforceNavigationBarContrast">false</item>
+        <!-- true: the system adds a scrim behind 3-button navigation only (gesture
+             navigation stays clear); without it the buttons drew over the text. -->
+        <item name="android:enforceNavigationBarContrast">true</item>
         <item name="android:enforceStatusBarContrast">false</item>
         <item name="android:windowLightStatusBar">@bool/light_bars</item>
         <item name="android:windowLightNavigationBar">@bool/light_bars</item>
