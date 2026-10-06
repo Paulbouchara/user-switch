@@ -275,9 +275,13 @@ public final class Main {
         if (!directCallBroken) {
             try {
                 return callDirect(method, arg, extras);
-            } catch (Throwable t) {
+            } catch (InvocationTargetException | IllegalStateException e) {
+                // the call itself failed (app being updated, provider error...): transient, retry next time
+                throw e;
+            } catch (ReflectiveOperationException | LinkageError | ClassCastException e) {
+                // the hidden API is not there on this Android version: use `content` from now on
                 directCallBroken = true;
-                log("direct provider call unavailable, falling back to `content`: " + t);
+                log("direct provider call unavailable, falling back to `content`: " + e);
             }
         }
         return callViaContent(method, arg, extras);
@@ -379,7 +383,11 @@ public final class Main {
         long t0 = System.currentTimeMillis();
         try {
             Object am = activityManager();
-            am.getClass().getMethod("switchUser", int.class).invoke(am, dest);
+            Object ok = am.getClass().getMethod("switchUser", int.class).invoke(am, dest);
+            if (Boolean.FALSE.equals(ok)) {
+                log("switch " + current + " -> " + dest + " refused by the system");
+                return;
+            }
         } catch (Throwable t) {
             log("direct switchUser failed, using am: " + t);
             sh("am", "switch-user", Integer.toString(dest));
@@ -422,11 +430,29 @@ public final class Main {
         throw new NoSuchMethodException(cls.getName() + "." + name + "/" + params);
     }
 
+    /**
+     * Runs a command and returns its output, killing it after 15 s: a hung
+     * command must not freeze the single executor that also handles the keys.
+     */
     static String sh(String... cmd) throws Exception {
         Process p = new ProcessBuilder(cmd).redirectErrorStream(true).start();
-        byte[] out = p.getInputStream().readAllBytes();
-        if (!p.waitFor(15, TimeUnit.SECONDS)) p.destroyForcibly();
-        return new String(out, StandardCharsets.UTF_8);
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        Thread reader = new Thread(() -> {
+            try (InputStream in = p.getInputStream()) {
+                in.transferTo(out);
+            } catch (IOException ignored) {
+                // process killed
+            }
+        }, "sh-out");
+        reader.start();
+        if (!p.waitFor(15, TimeUnit.SECONDS)) {
+            p.destroyForcibly();
+            log("timed out: " + String.join(" ", cmd));
+        }
+        reader.join(1000);
+        synchronized (out) {
+            return out.toString(StandardCharsets.UTF_8);
+        }
     }
 
     // ---- housekeeping ------------------------------------------------------
