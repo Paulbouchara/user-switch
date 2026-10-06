@@ -214,7 +214,7 @@ public final class MainActivity extends Activity implements Store.Listener {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         // Behind the status bar: the page scrolls under it, the clock must stay readable.
         View statusScrim = new View(this);
-        statusScrim.setBackgroundColor(M3.withAlpha(m.color(R.color.surface), 0.94f));
+        statusScrim.setBackgroundColor(m.color(R.color.surface)); // opaque: text showed through at 94%
         FrameLayout.LayoutParams sp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, Gravity.TOP);
         frame.addView(statusScrim, sp);
         FrameLayout.LayoutParams fp = new FrameLayout.LayoutParams(
