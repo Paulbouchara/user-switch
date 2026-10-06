@@ -45,6 +45,9 @@ public final class Store {
     private Listener listener;
     private long recordingUntil;
     private String recorded;
+    // daemon heartbeat, every 30 s: kept in memory so it does not write to disk each time
+    private volatile long daemonSeenAt;
+    private volatile int daemonPid = -1;
 
     private Store(Context ctx) {
         prefs = ctx.getSharedPreferences("config", Context.MODE_PRIVATE);
@@ -159,22 +162,21 @@ public final class Store {
 
     // ---- daemon info -------------------------------------------------------
 
-    public void daemonSeen(int pid, int currentUser, String usersJson) {
-        SharedPreferences.Editor e = prefs.edit()
-                .putLong("daemonSeen", System.currentTimeMillis())
-                .putInt("daemonPid", pid)
-                .putInt("currentUser", currentUser);
-        if (usersJson != null) e.putString("users", usersJson);
-        e.apply();
+    public void daemonSeen(int pid, String usersJson) {
+        daemonSeenAt = System.currentTimeMillis();
+        daemonPid = pid;
+        if (usersJson != null && !usersJson.equals(prefs.getString("users", null))) {
+            prefs.edit().putString("users", usersJson).apply();
+        }
         changed();
     }
 
     public long daemonSeenAt() {
-        return prefs.getLong("daemonSeen", 0);
+        return daemonSeenAt;
     }
 
     public int daemonPid() {
-        return prefs.getInt("daemonPid", -1);
+        return daemonPid;
     }
 
     public List<User> users() {

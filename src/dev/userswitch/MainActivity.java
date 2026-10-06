@@ -33,6 +33,8 @@ public final class MainActivity extends Activity implements Store.Listener {
     private TextView recordHint;
     private Button recordButton;
     private LinearLayout list;
+    /** What the list currently shows; rebuilding every tick could swallow a tap on "Supprimer". */
+    private String shownList;
 
     private final Runnable tick = new Runnable() {
         @Override
@@ -163,8 +165,13 @@ public final class MainActivity extends Activity implements Store.Listener {
         String recorded = store.takeRecorded();
         if (recorded != null) chooseTarget(recorded);
 
-        list.removeAllViews();
         List<Store.Sequence> seqs = store.sequences();
+        StringBuilder sig = new StringBuilder();
+        for (Store.Sequence s : seqs) sig.append(s.keys).append('>').append(store.targetLabel(s.target)).append(';');
+        if (sig.toString().equals(shownList)) return;
+        shownList = sig.toString();
+
+        list.removeAllViews();
         if (seqs.isEmpty()) list.addView(text("Aucune séquence.", 15));
         for (Store.Sequence s : seqs) {
             LinearLayout row = new LinearLayout(this);

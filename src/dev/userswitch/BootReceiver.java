@@ -9,10 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 
 /**
- * Without root, Shizuku has to be started by hand after a reboot, and it only
- * hands its binder to apps whose process starts (or comes to the foreground)
- * after it. So after boot we leave a reminder: start Shizuku, then tap here,
- * which opens the app, gets the binder and starts the daemon.
+ * Without root, Shizuku has to be started by hand after a reboot. After boot
+ * we arm ShizukuWatch, which starts the daemon by itself within a minute of
+ * Shizuku coming up, and leave a reminder to start Shizuku (tapping it opens
+ * the app, which also starts the daemon right away).
  */
 public final class BootReceiver extends BroadcastReceiver {
     /** High importance so the reminder shows as a heads-up right after boot. */
@@ -22,7 +22,9 @@ public final class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context ctx, Intent intent) {
-        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) showReminder(ctx);
+        if (!Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) return;
+        ShizukuWatch.arm(ctx);
+        showReminder(ctx);
     }
 
     static void showReminder(Context ctx) {
@@ -36,7 +38,7 @@ public final class BootReceiver extends BroadcastReceiver {
         Notification.Builder b = new Notification.Builder(ctx, CHANNEL)
                 .setSmallIcon(android.R.drawable.ic_menu_rotate)
                 .setContentTitle("User Switch inactif")
-                .setContentText("Démarre Shizuku, puis touche ici pour activer les séquences.")
+                .setContentText("Démarre Shizuku : le démon suivra tout seul en moins d'une minute.")
                 .setContentIntent(open)
                 .setAutoCancel(true);
 

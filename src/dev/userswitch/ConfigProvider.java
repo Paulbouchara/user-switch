@@ -33,7 +33,8 @@ public final class ConfigProvider extends ContentProvider {
         }
         Store store = Store.get(getContext());
         if (extras != null) {
-            store.daemonSeen(extras.getInt("pid", -1), extras.getInt("current", -1), decode(extras.getString("users")));
+            store.daemonSeen(extras.getInt("pid", -1), decode(extras.getString("users")));
+            if ("hello".equals(method)) ShizukuWatch.disarm(getContext()); // e.g. started from the PC
         }
         Bundle result = new Bundle();
         if ("remind".equals(method)) {

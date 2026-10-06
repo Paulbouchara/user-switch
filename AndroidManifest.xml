@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dev.userswitch"
-    android:versionCode="4"
-    android:versionName="0.4">
+    android:versionCode="5"
+    android:versionName="0.5">
 
     <!-- Shizuku client: permission and V3 marker come from the Shizuku provider library. -->
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
@@ -46,6 +46,10 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".ShizukuWatch"
+            android:exported="false" />
 
         <!-- Shizuku sends its binder here. -->
         <provider

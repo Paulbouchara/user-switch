@@ -35,7 +35,10 @@ public final class ShizukuLauncher {
         public void onServiceConnected(ComponentName name, IBinder binder) {
             bound = binder != null && binder.pingBinder();
             Log.i(TAG, "daemon service connected: " + bound);
-            if (bound) BootReceiver.cancelReminder(ctx);
+            if (bound) {
+                BootReceiver.cancelReminder(ctx);
+                ShizukuWatch.disarm(ctx);
+            }
             changed();
         }
 
@@ -57,11 +60,13 @@ public final class ShizukuLauncher {
                 .version(versionCode(ctx));
 
         Shizuku.addBinderReceivedListenerSticky(() -> {
-            if (isGranted()) start();
+            startIfGranted();
             changed();
         });
         Shizuku.addBinderDeadListener(() -> {
             bound = false;
+            // Shizuku stopped (and the daemon with it): restart both as soon as Shizuku is back
+            ShizukuWatch.arm(this.ctx);
             changed();
         });
         Shizuku.addRequestPermissionResultListener((requestCode, result) -> {
@@ -93,6 +98,11 @@ public final class ShizukuLauncher {
         if (bound) return State.RUNNING;
         if (!isGranted()) return denied ? State.DENIED : State.NEEDS_PERMISSION;
         return State.READY;
+    }
+
+    /** Starts (or reuses) the daemon when Shizuku runs and already granted us; never prompts. */
+    public void startIfGranted() {
+        if (isGranted() && !Shizuku.isPreV11()) start();
     }
 
     /** Asks for the permission if needed, then starts (or reuses) the daemon. */
@@ -130,6 +140,10 @@ public final class ShizukuLauncher {
     }
 
     private boolean isInstalled() {
+        return isInstalled(ctx);
+    }
+
+    public static boolean isInstalled(Context ctx) {
         try {
             ctx.getPackageManager().getPackageInfo(SHIZUKU_PACKAGE, 0);
             return true;

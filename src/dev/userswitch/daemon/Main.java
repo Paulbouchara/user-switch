@@ -51,6 +51,8 @@ public final class Main {
     static final String AUTHORITY = "dev.userswitch.config";
     static final String PID_FILE = "/data/local/tmp/userswitch.pid";
 
+    static final int EV_SYN = 0;
+    static final int SYN_DROPPED = 3;
     static final int EV_KEY = 1;
     static final int KEY_VOLUMEDOWN = 114;
     static final int KEY_VOLUMEUP = 115;
@@ -111,7 +113,9 @@ public final class Main {
             readers.add(t);
         }
         for (Thread t : readers) t.join();
-        log("all readers stopped");
+        // Exit instead of lingering: the heartbeat would keep telling the app we run.
+        log("all readers stopped, exiting");
+        System.exit(2);
     }
 
     // ---- input -------------------------------------------------------------
@@ -152,6 +156,11 @@ public final class Main {
                 int type = bb.getShort(16) & 0xffff;
                 int code = bb.getShort(18) & 0xffff;
                 int value = bb.getInt(20);
+                if (type == EV_SYN && code == SYN_DROPPED) {
+                    // the kernel dropped events: key releases may be lost, start over
+                    exec.execute(this::resetKeys);
+                    continue;
+                }
                 if (type != EV_KEY) continue;
                 if (code != KEY_VOLUMEUP && code != KEY_VOLUMEDOWN && code != KEY_POWER) continue;
                 long t = sec * 1000 + usec / 1000;
@@ -166,6 +175,7 @@ public final class Main {
     private void onKey(int code, int value, long t) {
         if (value == 2) return; // autorepeat
         if (value == 1) {
+            if (held.contains(code)) resetKeys(); // its release was lost
             if (pending != null) pending.cancel(false);
             if (held.isEmpty()) {
                 groupKeys.clear();
@@ -182,6 +192,15 @@ public final class Main {
                 pending = exec.schedule(this::finishBurst, GAP_MS, TimeUnit.MILLISECONDS);
             }
         }
+    }
+
+    /** Forgets keys held and the burst in progress, so a lost release cannot block bursts forever. */
+    private void resetKeys() {
+        held.clear();
+        groupKeys.clear();
+        tokens.clear();
+        if (pending != null) pending.cancel(false);
+        pending = null;
     }
 
     /** "UP", "DOWN", "POWER", chords as "UP+DOWN", long presses suffixed ":long". */
